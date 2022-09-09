@@ -8,11 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/*
+	ProfilePictureController is the rest controller which takes care of APIs related to the profile picture
+	get query.
+*/
 type ProfilePictureController struct {
 	storageSystem storagesystem.StorageSystem
 	bucketName    string
 }
 
+/*
+	returns new instance of profile pic controller. it takes bucketname and storage system object as arguement.
+*/
 func NewProfilePictureController(storageSystem storagesystem.StorageSystem, bucketName string) *ProfilePictureController {
 	return &ProfilePictureController{
 		storageSystem: storageSystem,
@@ -20,6 +27,9 @@ func NewProfilePictureController(storageSystem storagesystem.StorageSystem, buck
 	}
 }
 
+/*
+	reads header named guid and finds the file named "guid.jpg" under the bucket name in the storage system.
+*/
 func (p *ProfilePictureController) GetProfilePic(c *gin.Context) {
 	guid := c.GetHeader("guid")
 	s3Key := guid + ".jpg"
