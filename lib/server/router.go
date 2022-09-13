@@ -23,5 +23,9 @@ func NewRouter() *gin.Engine {
 func addProfilePicRoutes(router *gin.Engine) {
 	storageSystem := storagesystem.NewStorageSystem()
 	profilePicController := controllers.NewProfilePictureController(storageSystem, viper.GetString("bucket"))
-	router.GET("/v1/profile-pic", profilePicController.GetProfilePic)
+	profilePictureRoutes := router.Group("/v1/profile-pic")
+
+	profilePictureRoutes.GET("/", profilePicController.GetProfilePic)
+	profilePictureRoutes.POST("/", profilePicController.UpdateProfilePicture)
+	profilePictureRoutes.DELETE("/", profilePicController.DeleteProfilePicture)
 }

@@ -3,9 +3,11 @@ package controllers
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"example.com/lib/storagesystem"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 const IMAGE_TYPE = "image/jpeg"
@@ -38,7 +40,43 @@ func (p *ProfilePictureController) GetProfilePic(c *gin.Context) {
 	f, err := p.storageSystem.DownloadFile(p.bucketName, s3Key)
 	if err != nil {
 		log.Println("Failed to download the file:", err.Error())
-		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.Data(http.StatusOK, IMAGE_TYPE, f)
+}
+
+func (p *ProfilePictureController) UpdateProfilePicture(c *gin.Context) {
+	file, err := c.FormFile("photo")
+	if err != nil {
+		log.Println("Error in reading file:", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	localFilePath := "/tmp/" + uuid.New().String() + ".jpg"
+	log.Println("local file path:", localFilePath)
+	c.SaveUploadedFile(file, localFilePath)
+	defer os.Remove(localFilePath)
+
+	guid := c.GetHeader("guid")
+	s3Key := guid + ".jpg"
+	err = p.storageSystem.UploadFile(localFilePath, p.bucketName, s3Key)
+	if err != nil {
+		log.Println("Error in uploading file: ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.String(http.StatusOK, "")
+}
+
+func (p *ProfilePictureController) DeleteProfilePicture(c *gin.Context) {
+	guid := c.GetHeader("guid")
+	s3Key := guid + ".jpg"
+	err := p.storageSystem.DeleteFile(p.bucketName, s3Key)
+	if err != nil {
+		log.Println("Failed to delete the file:", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.String(http.StatusOK, "")
 }

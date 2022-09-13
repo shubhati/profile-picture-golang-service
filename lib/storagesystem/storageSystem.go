@@ -1,6 +1,8 @@
 package storagesystem
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+)
 
 /*
 	This interface contains the function used to download file from filesystem. Currently two filesystems
@@ -9,6 +11,8 @@ import "github.com/spf13/viper"
 */
 type StorageSystem interface {
 	DownloadFile(bucketName string, objectKey string) ([]byte, error)
+	UploadFile(localFilePath string, bucketName string, objectKey string) error
+	DeleteFile(bucketName string, objectKey string) error
 }
 
 const S3StorageType = "s3"

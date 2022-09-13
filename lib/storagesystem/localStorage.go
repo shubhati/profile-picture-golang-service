@@ -2,6 +2,7 @@ package storagesystem
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -24,6 +25,37 @@ func (s *LocalStorage) DownloadFile(bucketName string, objectKey string) ([]byte
 		return []byte{}, err
 	}
 	return fileContent, nil
+}
+
+func (s *LocalStorage) UploadFile(localFilePath string, bucketName string, objectKey string) error {
+	file, err := os.Open(localFilePath)
+	if err != nil {
+		log.Println("Error in reading local file: ", err.Error())
+		return err
+	}
+	defer file.Close()
+
+	filename := fmt.Sprintf("./%s/%s", bucketName, objectKey)
+	fileContent, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Println("Error in reading file: ", err.Error())
+		return err
+	}
+	err = ioutil.WriteFile(filename, fileContent, 0755)
+	if err != nil {
+		log.Println("Error in saving the file locally: ", err.Error())
+		return err
+	}
+	return nil
+}
+
+func (s *LocalStorage) DeleteFile(bucketName string, objectKey string) error {
+	filename := fmt.Sprintf("./%s/%s", bucketName, objectKey)
+	if err := os.Remove(filename); err != nil {
+		log.Println("Error while removing the file: ", err.Error())
+		return err
+	}
+	return nil
 }
 
 /*

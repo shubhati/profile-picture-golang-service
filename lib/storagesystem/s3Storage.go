@@ -2,6 +2,7 @@ package storagesystem
 
 import (
 	"log"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -15,6 +16,7 @@ This structure implements StorageSystem interface and contains the functions to 
 */
 type S3Storage struct {
 	s3Session *session.Session
+	s3Client  *s3.S3
 }
 
 /*
@@ -27,6 +29,7 @@ func NewS3StorageSystem() *S3Storage {
 	)
 	return &S3Storage{
 		s3Session: sessionObj,
+		s3Client:  s3.New(sessionObj),
 	}
 }
 
@@ -47,4 +50,40 @@ func (s *S3Storage) DownloadFile(bucketName string, objectKey string) ([]byte, e
 		return []byte{}, err
 	}
 	return buf.Bytes(), nil
+}
+
+func (s *S3Storage) UploadFile(localFilePath string, bucketName string, objectKey string) error {
+	file, err := os.Open(localFilePath)
+	if err != nil {
+		log.Println("Error in reading local file: ", err.Error())
+		return err
+	}
+	defer file.Close()
+	uploadInput := &s3manager.UploadInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectKey),
+		Body:   file,
+	}
+	uploader := s3manager.NewUploader(s.s3Session)
+	uploaderOutput, err := uploader.Upload(uploadInput)
+	if err != nil {
+		log.Println("Error while uploading the file to s3: ", err.Error())
+		return err
+	}
+	log.Println("File uploaded successfully, upload id:", uploaderOutput.UploadID)
+	return nil
+}
+
+func (s *S3Storage) DeleteFile(bucketName string, objectKey string) error {
+	deleteInput := &s3.DeleteObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectKey),
+	}
+	result, err := s.s3Client.DeleteObject(deleteInput)
+	if err != nil {
+		log.Println("Error while deleting the object from s3:", err.Error())
+		return err
+	}
+	log.Println("object deleted from s3, ", result.String())
+	return nil
 }
