@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/spf13/viper"
 )
 
 /*
@@ -19,7 +20,8 @@ type S3Storage struct {
 /*
 Creates the session on aws and returns a new object of type S3Storage.
 */
-func NewS3StorageSystem(region string) *S3Storage {
+func NewS3StorageSystem() *S3Storage {
+	region := viper.GetString("region")
 	sessionObj, _ := session.NewSession(&aws.Config{
 		Region: aws.String(region)},
 	)

@@ -1,0 +1,11 @@
+{
+    "server": {
+        "host": "localhost",
+        "port": 8087
+    },
+    "bucket": "test-bucket",
+    "storagesystem": "local",
+    "region": "us-west-2",
+    "awsAccessKey": "<access key>",
+    "awsSecretKey": "<secret key>"
+}

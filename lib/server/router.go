@@ -4,6 +4,7 @@ import (
 	"example.com/lib/controllers"
 	"example.com/lib/storagesystem"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 /*
@@ -20,7 +21,7 @@ func NewRouter() *gin.Engine {
 	addProfilePicRoutes adds the profile picture routes to the gin Engine
 */
 func addProfilePicRoutes(router *gin.Engine) {
-	localFileSystem := storagesystem.NewLocalStorageSystem()
-	profilePicController := controllers.NewProfilePictureController(localFileSystem, "test-bucket")
+	storageSystem := storagesystem.NewStorageSystem()
+	profilePicController := controllers.NewProfilePictureController(storageSystem, viper.GetString("bucket"))
 	router.GET("/v1/profile-pic", profilePicController.GetProfilePic)
 }

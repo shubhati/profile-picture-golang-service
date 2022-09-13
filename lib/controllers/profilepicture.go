@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const IMAGE_TYPE = "image/jpeg"
+
 /*
 	ProfilePictureController is the rest controller which takes care of APIs related to the profile picture
 	get query.
@@ -38,5 +40,5 @@ func (p *ProfilePictureController) GetProfilePic(c *gin.Context) {
 		log.Println("Failed to download the file:", err.Error())
 		c.Error(err)
 	}
-	c.Data(http.StatusOK, "image/jpeg", f)
+	c.Data(http.StatusOK, IMAGE_TYPE, f)
 }
