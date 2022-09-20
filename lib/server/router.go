@@ -7,6 +7,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const PROFILE_PICTURE_PATH = "/v1/profile-pic"
+
 /*
 	new router returns the gin.Engine object after adding all the routes in it. At present we only have profile picture
 	get route.
@@ -24,7 +26,7 @@ func addProfilePicRoutes(router *mux.Router) {
 	storageSystem := storagesystem.NewStorageSystem()
 	profilePicController := controllers.NewProfilePictureController(storageSystem, viper.GetString("bucket"))
 
-	profilePictureRoutes := router.PathPrefix("/v1/profile-pic").Subrouter()
+	profilePictureRoutes := router.PathPrefix(PROFILE_PICTURE_PATH).Subrouter()
 
 	profilePictureRoutes.HandleFunc("", profilePicController.GetProfilePic).Methods("GET")
 	profilePictureRoutes.HandleFunc("", profilePicController.UpdateProfilePicture).Methods("POST")

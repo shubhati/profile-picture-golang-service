@@ -9,6 +9,8 @@ import (
 )
 
 const IMAGE_TYPE = "image/jpeg"
+const GUID_HEADER = "guid"
+const PROFILE_PHOTO_KEY = "photo"
 
 /*
 	ProfilePictureController is the rest controller which takes care of APIs related to the profile picture
@@ -33,7 +35,7 @@ func NewProfilePictureController(storageSystem storagesystem.StorageSystem, buck
 	reads header named guid and finds the file named "guid.jpg" under the bucket name in the storage system.
 */
 func (p *ProfilePictureController) GetProfilePic(rw http.ResponseWriter, r *http.Request) {
-	guid := r.Header.Get("guid")
+	guid := r.Header.Get(GUID_HEADER)
 	s3Key := guid + ".jpg"
 	f, err := p.storageSystem.DownloadFile(p.bucketName, s3Key)
 	if err != nil {
@@ -51,7 +53,8 @@ func (p *ProfilePictureController) GetProfilePic(rw http.ResponseWriter, r *http
 }
 
 func (p *ProfilePictureController) UpdateProfilePicture(rw http.ResponseWriter, r *http.Request) {
-	file, _, err := r.FormFile("photo")
+
+	file, _, err := r.FormFile(PROFILE_PHOTO_KEY)
 	if err != nil {
 		log.Println("Error in reading file:", err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -59,7 +62,7 @@ func (p *ProfilePictureController) UpdateProfilePicture(rw http.ResponseWriter, 
 	}
 	defer file.Close()
 
-	guid := r.Header.Get("guid")
+	guid := r.Header.Get(GUID_HEADER)
 	s3Key := guid + ".jpg"
 	err = p.storageSystem.UploadFile(file, p.bucketName, s3Key)
 	if err != nil {
@@ -72,7 +75,7 @@ func (p *ProfilePictureController) UpdateProfilePicture(rw http.ResponseWriter, 
 }
 
 func (p *ProfilePictureController) DeleteProfilePicture(rw http.ResponseWriter, r *http.Request) {
-	guid := r.Header.Get("guid")
+	guid := r.Header.Get(GUID_HEADER)
 	s3Key := guid + ".jpg"
 	err := p.storageSystem.DeleteFile(p.bucketName, s3Key)
 	if err != nil {
