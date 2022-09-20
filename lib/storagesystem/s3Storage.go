@@ -1,8 +1,8 @@
 package storagesystem
 
 import (
+	"io"
 	"log"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -52,13 +52,7 @@ func (s *S3Storage) DownloadFile(bucketName string, objectKey string) ([]byte, e
 	return buf.Bytes(), nil
 }
 
-func (s *S3Storage) UploadFile(localFilePath string, bucketName string, objectKey string) error {
-	file, err := os.Open(localFilePath)
-	if err != nil {
-		log.Println("Error in reading local file: ", err.Error())
-		return err
-	}
-	defer file.Close()
+func (s *S3Storage) UploadFile(file io.Reader, bucketName string, objectKey string) error {
 	uploadInput := &s3manager.UploadInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),

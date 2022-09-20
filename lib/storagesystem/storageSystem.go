@@ -1,6 +1,8 @@
 package storagesystem
 
 import (
+	"io"
+
 	"github.com/spf13/viper"
 )
 
@@ -11,7 +13,7 @@ import (
 */
 type StorageSystem interface {
 	DownloadFile(bucketName string, objectKey string) ([]byte, error)
-	UploadFile(localFilePath string, bucketName string, objectKey string) error
+	UploadFile(file io.Reader, bucketName string, objectKey string) error
 	DeleteFile(bucketName string, objectKey string) error
 }
 

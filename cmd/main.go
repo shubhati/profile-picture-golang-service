@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	"example.com/lib/server"
 	"github.com/spf13/viper"
@@ -33,5 +34,6 @@ func init() {
 */
 func main() {
 	router := server.NewRouter()
-	router.Run(fmt.Sprintf("%s:%d", viper.GetString("server.host"), viper.GetInt("server.port")))
+	http.ListenAndServe(fmt.Sprintf("%s:%d", viper.GetString("server.host"), viper.GetInt("server.port")), router)
+	// router.Run(fmt.Sprintf("%s:%d", viper.GetString("server.host"), viper.GetInt("server.port")))
 }

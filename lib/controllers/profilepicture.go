@@ -1,13 +1,11 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"example.com/lib/storagesystem"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 const IMAGE_TYPE = "image/jpeg"
@@ -34,49 +32,54 @@ func NewProfilePictureController(storageSystem storagesystem.StorageSystem, buck
 /*
 	reads header named guid and finds the file named "guid.jpg" under the bucket name in the storage system.
 */
-func (p *ProfilePictureController) GetProfilePic(c *gin.Context) {
-	guid := c.GetHeader("guid")
+func (p *ProfilePictureController) GetProfilePic(rw http.ResponseWriter, r *http.Request) {
+	guid := r.Header.Get("guid")
 	s3Key := guid + ".jpg"
 	f, err := p.storageSystem.DownloadFile(p.bucketName, s3Key)
 	if err != nil {
 		log.Println("Failed to download the file:", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		rw.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(rw, err.Error())
 		return
 	}
-	c.Data(http.StatusOK, IMAGE_TYPE, f)
+	rw.Header().Set("Content-Type", IMAGE_TYPE)
+	if _, err = rw.Write(f); err != nil {
+		log.Println("Error in writing response: " + err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(rw, err.Error())
+	}
 }
 
-func (p *ProfilePictureController) UpdateProfilePicture(c *gin.Context) {
-	file, err := c.FormFile("photo")
+func (p *ProfilePictureController) UpdateProfilePicture(rw http.ResponseWriter, r *http.Request) {
+	file, _, err := r.FormFile("photo")
 	if err != nil {
 		log.Println("Error in reading file:", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		rw.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(rw, err.Error())
 	}
-	localFilePath := "/tmp/" + uuid.New().String() + ".jpg"
-	log.Println("local file path:", localFilePath)
-	c.SaveUploadedFile(file, localFilePath)
-	defer os.Remove(localFilePath)
+	defer file.Close()
 
-	guid := c.GetHeader("guid")
+	guid := r.Header.Get("guid")
 	s3Key := guid + ".jpg"
-	err = p.storageSystem.UploadFile(localFilePath, p.bucketName, s3Key)
+	err = p.storageSystem.UploadFile(file, p.bucketName, s3Key)
 	if err != nil {
 		log.Println("Error in uploading file: ", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		rw.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(rw, err.Error())
 		return
 	}
-	c.String(http.StatusOK, "")
+	// c.String(http.StatusOK, "")
 }
 
-func (p *ProfilePictureController) DeleteProfilePicture(c *gin.Context) {
-	guid := c.GetHeader("guid")
+func (p *ProfilePictureController) DeleteProfilePicture(rw http.ResponseWriter, r *http.Request) {
+	guid := r.Header.Get("guid")
 	s3Key := guid + ".jpg"
 	err := p.storageSystem.DeleteFile(p.bucketName, s3Key)
 	if err != nil {
 		log.Println("Failed to delete the file:", err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		rw.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(rw, err.Error())
 		return
 	}
-	c.String(http.StatusOK, "")
+	// c.String(http.StatusOK, "")
 }
