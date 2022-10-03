@@ -18,12 +18,15 @@ type StorageSystem interface {
 }
 
 const S3StorageType = "s3"
+const MockedStorageType = "mocked"
 
 func NewStorageSystem() StorageSystem {
 	storageType := viper.GetString("storagesystem")
 	if storageType == S3StorageType {
 		return NewS3StorageSystem()
-	} else {
+	} else if storageType == MockedStorageType {
 		return NewLocalStorageSystem()
+	} else {
+		panic("unsupported storage type")
 	}
 }

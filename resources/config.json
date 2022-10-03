@@ -4,7 +4,7 @@
         "port": 8087
     },
     "bucket": "test-bucket",
-    "storagesystem": "local",
+    "storagesystem": "mocked",
     "region": "us-west-2",
     "awsAccessKey": "<access key>",
     "awsSecretKey": "<secret key>"

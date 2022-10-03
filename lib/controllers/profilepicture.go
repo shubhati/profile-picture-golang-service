@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -59,6 +60,14 @@ func (p *ProfilePictureController) UpdateProfilePicture(rw http.ResponseWriter, 
 		log.Println("Error in reading file:", err.Error())
 		rw.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintln(rw, err.Error())
+		return
+	}
+	if file == nil {
+		err = errors.New("file not found under the key: " + PROFILE_PHOTO_KEY)
+		log.Println(err.Error())
+		rw.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(rw, err.Error())
+		return
 	}
 	defer file.Close()
 
